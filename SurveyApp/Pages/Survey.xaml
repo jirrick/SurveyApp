@@ -1,0 +1,33 @@
+﻿<Page
+    x:Class="SurveyApp.Pages.Survey"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:SurveyApp.Pages"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <RelativePanel Background="Transparent" FlowDirection="LeftToRight">
+        <TextBlock x:Name="helper" Text="" FontSize="32" Margin="10"></TextBlock>
+        <!--tlačítko pro odeslání dotzníku-->
+        <Button x:Name="submit" Content="Odeslat dotazník" FontSize="32" Margin="10" Foreground="{ThemeResource SystemControlHighlightAccentBrush}"
+                RelativePanel.AlignLeftWith="surveyFields" Click="odeslatDotaznik_Click" Visibility="Collapsed"></Button>    
+        <!--pole do kterého se vykreslují otázky dotazníku-->
+        <GridView x:Name="surveyFields"
+                  ItemTemplateSelector="{StaticResource SurveyTemplateSelector}"
+                  RelativePanel.AlignHorizontalCenterWithPanel="True"
+                  RelativePanel.Below="helper">
+            <GridView.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <!--položka dotazníku má standardní velikost 150 x 300, ale  pomocí Template selectoru je možné dynamicky změnit vzhled každé bunky-->
+                    <VariableSizedWrapGrid Orientation="Horizontal" ItemHeight="150" ItemWidth="300"
+                              Margin="10">
+                    </VariableSizedWrapGrid>
+                </ItemsPanelTemplate>
+            </GridView.ItemsPanel>
+        </GridView>
+
+        <ProgressRing x:Name="submitRing" Visibility="Collapsed" IsActive="True" Margin="10" Height="150" Width="150"
+                          RelativePanel.AlignHorizontalCenterWithPanel="True" RelativePanel.AlignVerticalCenterWithPanel="True"/>
+    </RelativePanel>
+</Page>

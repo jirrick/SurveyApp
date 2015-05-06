@@ -1,0 +1,120 @@
+﻿<Page
+    x:Class="SurveyApp.Pages.Settings"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:SurveyApp.Pages"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+    
+    <!--celá stranka umožňuje scrollování-->
+    <ScrollViewer x:Name="scroll" FlowDirection="LeftToRight">
+        <!--VisualSateManager se stará o přepínání vizuálních stavů-->
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup>
+                <!--jednotlivé vizuální styly mají svůj název,...-->
+                <VisualState x:Name="oneColumn">                   
+                    <!--..., podmínky, kdy jsou aktivovány a ...-->
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="1"/>
+                    </VisualState.StateTriggers>
+                    <!--... a seznam nastavení, které se mají aplikovat, když jsou podmínky splněny-->
+                    <VisualState.Setters>
+                        <Setter Target="Helper.Width" Value="330"/> 
+                        <Setter Target="First.Width" Value="330"/>
+                        <Setter Target="Second.Width" Value="330"/>
+                        <Setter Target="Second.(RelativePanel.Below)" Value="First"/>
+                        <Setter Target="Second.(RelativePanel.AlignLeftWith)" Value="Helper"/>
+                        <!--v tomto stavu jsou oba hlavní panely uspořádány pod sebou (Second.Below = First) -->
+                    </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="twoColumnsA">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="720"/>
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="Helper.Width" Value="680"/>
+                        <Setter Target="First.Width" Value="330"/>
+                        <Setter Target="Second.Width" Value="350"/>
+                        <Setter Target="Second.(RelativePanel.RightOf)" Value="First"/>
+                        <Setter Target="Second.(RelativePanel.AlignTopWithPanel)" Value="true"/>
+                        <!--v následujících dvou jsou oba panely vedle sebe (Second.RightOf = First) -->
+                    </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="twoColumnsB">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="1024"/>
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="Helper.Width" Value="955"/>
+                        <Setter Target="First.Width" Value="380"/>
+                        <Setter Target="Second.Width" Value="575"/>
+                        <Setter Target="Second.(RelativePanel.RightOf)" Value="First"/>
+                        <Setter Target="Second.(RelativePanel.AlignTopWithPanel)" Value="true"/>
+                        <!--poslední stav se liší jen jinými šířkamu sloupců-->
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+            <!--pomocí vhodně nastavených hranic pro jednotlivé skupiny lze dosáhnout přepínání mezi mobilním zobrazením
+            (úzká "nudle" na výšku) a desktopovým, kdy je typicky k dispozici více ptostoru-->
+        </VisualStateManager.VisualStateGroups>
+        
+        <RelativePanel x:Name="panel" FlowDirection="LeftToRight">
+         
+            <StackPanel x:Name="First" RelativePanel.AlignLeftWith="Helper">
+                <TextBlock Text="Nastavení" Foreground="{ThemeResource SystemControlHighlightAccentBrush}" FontSize="32" Margin="10"></TextBlock>
+                <!-- první panel obsahuje vizuální prvky jak pro přihlašovací formulář ....-->
+                <StackPanel x:Name="LoginField" Visibility="{Binding Path=VisibleWhenLoggedOff, Mode=OneWay}">
+                    <TextBox x:Name="URL" Header="Adresa Sharepoint Site" PlaceholderText="https://tenant.sharepoint.com/Site" Margin="10"></TextBox>
+                    <TextBox x:Name="userName" Header="Uživatelské jméno" PlaceholderText="user@tenant.onmicrosoft.com" Margin="10"></TextBox>
+                    <PasswordBox x:Name="password" Header="Heslo" Margin="10"></PasswordBox>
+                    <CheckBox x:Name="savePassword" Content="Uložit heslo" Margin="10"></CheckBox>
+                    <Button x:Name="login" Content="Přihlásit se k SharePointu" Margin="10" Click="login_Click"></Button>
+                </StackPanel>
+                <!-- ... tak pro uživatelské nastavení a odhlášení-->
+                <StackPanel x:Name="SharepointControl" Visibility="{Binding Path=VisibleWhenLoggedIn, Mode=OneWay}">
+                    <ComboBox x:Name="listSelector"  Header="Dostupné SharePoint listy:" Margin="10" ItemsSource="{Binding}" SelectionChanged="listSelector_SelectionChanged"
+                               SelectedValuePath="ID" DisplayMemberPath="Title" PlaceholderText="Vyberte list ke zpracování">
+                    </ComboBox>
+                    <Button x:Name="publicMode" Content="Přepnout do redukovaného zobrazení" Margin="10" Click="publicMode_Click"></Button>
+                    <Button x:Name="logout" Content="Odhlásit se ze Sharepointu" Margin="10" Click="logoff_Click"></Button>
+                    <Button x:Name="deleteCredentials" Content="Odhlásit se a vymazat uložené údaje" Margin="10" Click="deleteCredentials_Click"></Button>
+                </StackPanel>
+            </StackPanel>
+
+            <!-- Druhý panel obsahuje přehled položek ve zvoleném adresáři ....-->
+            <StackPanel x:Name="Second" Visibility="{Binding Path=VisibleWhenLoggedIn, Mode=OneWay}">
+                <TextBlock Text="" FontSize="32" Margin="10"/>
+                <!-- seznam je implenetovaný jako listview ....-->
+                <ListView x:Name="listFields" Header="Položky zvoleného listu:" ItemsSource="{Binding}" Margin="10">
+                    <ListView.ItemTemplate>
+                        <!--... kterému se patřičně upraví šablona ...-->
+                        <DataTemplate>
+                            <StackPanel>
+                                <!--... a zadefinují názvy polí ve zdrojové kolekci-->
+                                <TextBlock Text="{Binding FieldTitle}" FontWeight="Bold"></TextBlock>
+                                <TextBlock Text="{Binding FieldType}" FontStyle="Italic"></TextBlock>
+                                <!-- o načítaání dat a zpětný zápis zvolené hodnoty se postará Binding -->
+                                <ComboBox Header="Položky odkazovaného listu:" ItemsSource="{Binding LookupItems}"
+                                          Visibility="{Binding LookupVisibility}" SelectedValue="{Binding LookupIndex, Mode=TwoWay}"
+                                          SelectedValuePath="ID" DisplayMemberPath="Title" PlaceholderText="Vyberte navázanou položku"></ComboBox>
+                                <TextBlock></TextBlock>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ListView.ItemTemplate>
+                </ListView>
+            </StackPanel>
+
+            <!-- třetí panel slouží pouze pro zarovnání na prostředek v režimu obou hlavních panelů vedle sebe
+            má stejnou šířku jako oba panely dohromady a proto jej stačí zarovnat na prostředek a zbývající panely
+            zarovnávat od levého kraje....-->
+            <StackPanel x:Name="Helper" RelativePanel.AlignHorizontalCenterWithPanel="True">
+            </StackPanel>
+
+            <!-- na stránce je i schovaný prgogress bar, který zobrazuje, že na pozadí probíhá činnost.-->
+            <ProgressRing x:Name="loadingRing" Visibility="Collapsed" IsActive="True" Margin="10" Height="150" Width="150"
+                          RelativePanel.AlignHorizontalCenterWithPanel="True" RelativePanel.AlignVerticalCenterWithPanel="True"/>
+        </RelativePanel>
+    </ScrollViewer>
+</Page>
+
